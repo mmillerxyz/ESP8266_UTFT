@@ -97,7 +97,6 @@ UTFTUiState UTFTUi::getUiState(){
 
 int UTFTUi::update(){
   int timeBudget = this->updateInterval - (millis() - this->state.lastUpdate);
-  Serial.println(">> timeBudget: " + String(timeBudget));
 
   if ( timeBudget <= 0) {
     // Implement frame skipping to ensure time budget is kept
@@ -112,9 +111,6 @@ int UTFTUi::update(){
 
 void UTFTUi::tick() {
   this->state.ticksSinceLastStateSwitch++;
-  Serial.println(">>call tick()... ticksSinceLastStateSwitch: " + String(this->state.ticksSinceLastStateSwitch)
-    + ", frameState: "+ String(this->state.frameState) + ", dirty: " + String(this->dirty)
-    + ", autoTransition: "+ String(this->autoTransition));
 
   switch (this->state.frameState) {
     case IN_TRANSITION:
@@ -131,13 +127,10 @@ void UTFTUi::tick() {
             this->state.frameState = IN_TRANSITION;
             this->dirty = true;
           }
-          //this->state.ticksSinceLastStateSwitch = 0;
+          this->state.ticksSinceLastStateSwitch = 0;
       }
       break;
   }
-
-  Serial.println(">>ticksSinceLastStateSwitch2: " + String(this->state.ticksSinceLastStateSwitch)
-    + ", dirty: " + String(this->dirty));
 
   if (this->dirty) {
 
@@ -153,41 +146,31 @@ void UTFTUi::drawFrame(){
   switch (this->state.frameState){
      case IN_TRANSITION: {
        float progress = (float) this->state.ticksSinceLastStateSwitch / (float) this->ticksPerTransition;
-       Serial.println(">>progress: "+ String(progress) + ", ticksSinceLastStateSwitch:" +String(this->state.ticksSinceLastStateSwitch)
-        + ", ticksPerTransition:" + String(this->ticksPerTransition));
 
        int x, y, x1, y1;
        switch(this->frameAnimationDirection){
         case SLIDE_LEFT:
-          //x = -128 * progress;
           x = -this->display->getDisplayXSize() * progress;
           y = 0;
-          //x1 = x + 128;
           x1 = x + this->display->getDisplayXSize();
           y1 = 0;
           break;
         case SLIDE_RIGHT:
-          //x = 128 * progress;
           x = this->display->getDisplayXSize() * progress;
           y = 0;
-          //x1 = x - 128;
           x1 = x - this->display->getDisplayXSize();
           y1 = 0;
           break;
         case SLIDE_UP:
           x = 0;
-          //y = -64 * progress;
           y = -this->display->getDisplayYSize() * progress;
           x1 = 0;
-          //y1 = y + 64;
           y1 = y + this->display->getDisplayYSize();
           break;
         case SLIDE_DOWN:
           x = 0;
-          //y = 64 * progress;
           y = this->display->getDisplayYSize() * progress;
           x1 = 0;
-          //y1 = y - 64;
           y1 = y - this->display->getDisplayYSize();
           break;
        }
